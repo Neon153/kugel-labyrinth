@@ -1,0 +1,10 @@
+# Zeilenenden automatisch normalisieren
+* text=auto eol=lf
+
+# Windows-Skripte brauchen CRLF
+*.bat text eol=crlf
+
+# Binärdateien
+*.jar binary
+*.png binary
+*.apk binary

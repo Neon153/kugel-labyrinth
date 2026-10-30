@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kugel-Labyrinth</string>
+
+    <!-- Menü -->
+    <string name="menu_subtitle">Kippe das Handy und steuere die Kugel durch das Labyrinth ins grüne Ziel.</string>
+    <string name="menu_section_difficulty">SCHWIERIGKEIT</string>
+    <string name="menu_section_assist">ART DER UNTERSTÜTZUNG</string>
+    <string name="menu_section_speed">KUGELGESCHWINDIGKEIT</string>
+    <string name="menu_easy" formatted="false">Leicht – 8 Spalten, Hilfe 100 %</string>
+    <string name="menu_medium" formatted="false">Mittel – 10 Spalten, Hilfe 60 %</string>
+    <string name="menu_hard" formatted="false">Schwer – 13 Spalten, Hilfe 30 %</string>
+    <string name="menu_pro" formatted="false">Profi – 14 Spalten, Hilfe 0 % (keine Unterstützung)</string>
+    <string name="menu_sensitivity">Empfindlichkeit (Sensor reagiert schwächer)</string>
+    <string name="menu_software">Software-Hilfe (Sensor unverändert)</string>
+    <string name="menu_start">Spiel starten</string>
+    <string name="speed_value">%1$d %%</string>
+    <string name="speed_value_default">%1$d %% (Standard)</string>
+    <string name="speed_hint">Bestzeiten werden für jede Geschwindigkeit getrennt gespeichert.</string>
+
+    <string name="info_sensitivity">Der Sensor reagiert weniger empfindlich: Kleine Neigungen werden ausgeblendet und die Kugel beschleunigt schwächer. Die Software greift nicht in die Bewegung ein. Hilfe: %1$d %%.</string>
+    <string name="info_software">Der Sensor bleibt voll empfindlich. Die Software unterstützt deine Steuerung: Sie lenkt dein Kippen in den passenden offenen Gang, hält die Kugel in der Gangmitte und dämpft das Abprallen. Ohne Kippen passiert nichts. Hilfe: %1$d %%.</string>
+    <string name="info_pro">Hilfe 0 %%: keinerlei Unterstützung. Reiner Sensor-Eingang, die Kugel prallt von den Wänden ab. Die Art der Unterstützung spielt hier keine Rolle. Labyrinth mit %1$d Spalten.</string>
+    <string name="best_time">Bestzeit in dieser Einstellung: %1$s</string>
+    <string name="best_time_none">Bestzeit in dieser Einstellung: –</string>
+
+    <!-- Kurzlabels -->
+    <string name="difficulty_easy">Leicht</string>
+    <string name="difficulty_medium">Mittel</string>
+    <string name="difficulty_hard">Schwer</string>
+    <string name="difficulty_pro">Profi</string>
+    <string name="assist_sensitivity">Empfindlichkeit</string>
+    <string name="assist_software">Software-Hilfe</string>
+    <string name="assist_none">Keine Hilfe</string>
+
+    <!-- Spiel -->
+    <string name="mode_format">%1$s · %2$s · Tempo %3$d %%</string>
+    <string name="timer_initial">0,0 s</string>
+    <string name="action_restart">Neustart</string>
+    <string name="action_menu">Menü</string>
+    <string name="action_new_maze">Neues Labyrinth</string>
+    <string name="action_retry">Nochmal</string>
+    <string name="ready_title">Bereit?</string>
+    <string name="ready_body">Halte das Handy bequem – diese Lage gilt als neutral.\nTippe zum Starten.</string>
+    <string name="game_area_description">Spielfeld. Antippen zum Starten, dann Handy kippen.</string>
+    <string name="no_sensor">Dieses Gerät hat keinen Lage-Sensor.</string>
+    <string name="result_title">Geschafft!</string>
+    <string name="result_message">Zeit: %1$s\nBestzeit: %2$s</string>
+    <string name="result_record">Neuer Rekord!</string>
+</resources>

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textColor="@color/text"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/menu_subtitle"
+            android:textColor="@color/text_dim"
+            android:textSize="14sp" />
+
+        <!-- Schwierigkeit -->
+        <TextView
+            style="@style/SectionLabel"
+            android:layout_marginTop="28dp"
+            android:text="@string/menu_section_difficulty" />
+
+        <RadioGroup
+            android:id="@+id/groupDifficulty"
+            style="@style/OptionCard">
+
+            <RadioButton
+                android:id="@+id/rbEasy"
+                style="@style/OptionRadio"
+                android:text="@string/menu_easy" />
+
+            <RadioButton
+                android:id="@+id/rbMedium"
+                style="@style/OptionRadio"
+                android:text="@string/menu_medium" />
+
+            <RadioButton
+                android:id="@+id/rbHard"
+                style="@style/OptionRadio"
+                android:text="@string/menu_hard" />
+
+            <RadioButton
+                android:id="@+id/rbPro"
+                style="@style/OptionRadio"
+                android:text="@string/menu_pro" />
+        </RadioGroup>
+
+        <!-- Art der Unterstützung -->
+        <TextView
+            style="@style/SectionLabel"
+            android:layout_marginTop="24dp"
+            android:text="@string/menu_section_assist" />
+
+        <RadioGroup
+            android:id="@+id/groupAssist"
+            style="@style/OptionCard">
+
+            <RadioButton
+                android:id="@+id/rbSensitivity"
+                style="@style/OptionRadio"
+                android:text="@string/menu_sensitivity" />
+
+            <RadioButton
+                android:id="@+id/rbSoftware"
+                style="@style/OptionRadio"
+                android:text="@string/menu_software" />
+        </RadioGroup>
+
+        <!-- Kugelgeschwindigkeit -->
+        <TextView
+            style="@style/SectionLabel"
+            android:layout_marginTop="24dp"
+            android:text="@string/menu_section_speed" />
+
+        <LinearLayout style="@style/OptionCard">
+
+            <TextView
+                android:id="@+id/textSpeed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <SeekBar
+                android:id="@+id/seekSpeed"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:contentDescription="@string/menu_section_speed" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/speed_hint"
+                android:textColor="@color/text_dim"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:lineSpacingExtra="3dp"
+            android:textColor="@color/text_dim"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/textBest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/text"
+            android:textSize="14sp" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/buttonStart"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="@color/accent"
+            android:text="@string/menu_start"
+            android:textColor="@color/text"
+            android:textSize="18sp" />
+    </LinearLayout>
+</ScrollView>
