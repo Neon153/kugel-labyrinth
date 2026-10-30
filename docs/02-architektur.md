@@ -273,7 +273,7 @@ Die messbaren Qualitätsanforderungen stehen als NFA-01 … NFA-13 in den [Anfor
 
 | # | Risiko / Schuld | Auswirkung | Maßnahme / Status |
 |---|---|---|---|
-| R-1 | **Noch nicht auf einem echten Gerät getestet.** Die Entwicklungsumgebung hatte keinen Zugriff auf das Android SDK. | Abweichungen im Spielgefühl oder gerätespezifische Fehler möglich | Manuelle Gerätetests MT-01 … MT-12 ([Tests 7.4](07-tests.md#74-manuelle-gerätetests)); CI baut mit echtem SDK |
+| R-1 | **Noch nicht auf einem echten Gerät getestet.** Build, Lint und Unit-Tests laufen in der CI mit echtem Android SDK; Sensor und Spielgefühl sind nur auf einem Gerät prüfbar. | Abweichungen im Spielgefühl oder gerätespezifische Fehler möglich | Manuelle Gerätetests MT-01 … MT-14 ([Tests 7.4](07-tests.md#74-manuelle-gerätetests)) |
 | R-2 | Spielstand geht verloren, wenn Android die Activity neu erstellt (Sprach-/Schriftgrößenwechsel, Split-Screen, Prozess-Ende im Hintergrund) | Laufendes Spiel startet mit neuem Labyrinth | Bewusst nicht umgesetzt (kurze Spielrunden); bei Bedarf `onSaveInstanceState` mit Seed + Kugelzustand |
 | R-3 | Nach Rückkehr aus dem Hintergrund läuft das Spiel sofort weiter, ohne erneute „Bereit?“-Anzeige | Kugel kann losrollen, bevor der Spieler bereit ist | Bei Bedarf Pause-Zustand ergänzen |
 | R-4 | Physikmodell vereinfacht (geschwindigkeitsproportionale Reibung, Tempolimit, Totzone auf Eingabe, kein Drall) | Weniger realistisch als ein echtes Brett | Dokumentiert in [Fachkonzept 3.4](03-fachkonzept.md#34-physikalische-einordnung) |

@@ -6,7 +6,7 @@
 |---|---|---|---|---|
 | Unit-Tests | Labyrinth, Physik, Kollision, Hilfen, Tempo, Zeitformat | JUnit 4.13.2 auf der JVM | ✔ (lokal + CI) | 22/22 bestanden |
 | Statische Prüfung | Kompilieren mit Warnungen als Fehler; Ressourcen-Referenzen und Formatplatzhalter | Kotlin-Compiler `-Werror`, Prüfskript | ✔ (lokal) | bestanden |
-| Build + Lint | Echter Android-Build mit SDK 35, Android Lint | Gradle, GitHub Actions | ✔ (CI) | siehe 7.3 |
+| Build + Lint | Echter Android-Build mit SDK 35, Android Lint | Gradle, GitHub Actions | ✔ (CI) | bestanden (7.3) |
 | Gerätetest | Sensor, Spielgefühl, Lebenszyklus, Darstellung | manuell, Testplan 7.4 | ✘ | **offen** |
 
 Die Spiellogik ist bewusst Android-frei ([ADR-002](06-entscheidungen.md#adr-002-spiellogik-ohne-android-abhängigkeiten)). Deshalb lassen sich ganze Spielverläufe mit einem simulierten Spieler testen.
@@ -68,7 +68,14 @@ Zusätzlich wurde der gesamte App-Code (inkl. Activities, View, Sensor) mit `-We
 
 ### CI-Lauf (GitHub Actions)
 
-Der erste Lauf mit echtem Android SDK erfolgt beim ersten Push. Ergebnis: siehe *Actions* im Repository bzw. Badge in der [README](../README.md).
+| | |
+|---|---|
+| Datum | 30.10.2026, Lauf-ID 41128812406, Commit `6cdfa39` |
+| Umgebung | GitHub Actions `ubuntu-latest`, Temurin JDK 17, Gradle 8.9 (Wrapper, Prüfsumme validiert), Android SDK Platform 35 |
+| Ergebnis | **Erfolgreich** in 3 min 22 s: `testDebugUnitTest` ✔, `lintDebug` ✔ (keine Lint-Fehler), `assembleDebug` ✔ |
+| Artefakte | Debug-APK (≈ 0,8 MB gepackt), Test- und Lint-Berichte |
+
+Damit ist der Code erstmals mit dem echten Android SDK kompiliert und gegen Android Lint geprüft. Den aktuellen Stand zeigt das Badge in der [README](../README.md).
 
 ## 7.4 Manuelle Gerätetests
 

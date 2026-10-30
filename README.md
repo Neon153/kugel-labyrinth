@@ -9,7 +9,7 @@ Android-Spiel nach dem Vorbild des Holz-Kugellabyrinths: **Kippe dein Handy** un
 | **Version** | 1.3.0 (versionCode 4), siehe [CHANGELOG](CHANGELOG.md) |
 | **Plattform** | Android 7.0 – 15 (API 24 – 35), Hochformat |
 | **Sprache / Technik** | Kotlin 2.0.21 · Android-Views + Canvas · keine Bibliotheken |
-| **Status** | Funktional vollständig; automatisierte Tests bestanden; **Gerätetest noch offen** (siehe [Tests 7.4](docs/07-tests.md#74-manuelle-gerätetests)) |
+| **Status** | Funktional vollständig; Unit-Tests, Lint und Android-Build in der CI bestanden; **Gerätetest noch offen** (siehe [Tests 7.4](docs/07-tests.md#74-manuelle-gerätetests)) |
 
 ## Funktionen
 
