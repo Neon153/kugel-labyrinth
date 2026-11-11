@@ -78,6 +78,15 @@ class GameEngineTest {
     }
 
     @Test
+    fun watchMazes_everyCombination_atEverySpeed_isSolvable_withoutWallPenetration() {
+        // Uhr: quadratische Labyrinthe watchCols × watchCols
+        for (d in Difficulty.entries) for (a in AssistMode.entries) for (s in speeds) for (seed in 0 until 2) {
+            val maze = Maze(d.watchCols, d.watchCols, Random(100 + seed))
+            assertTrue(play(GameEngine(maze, d, a, s)) > 0f)
+        }
+    }
+
+    @Test
     fun noTilt_meansNoMovement_inEveryMode() {
         for (d in Difficulty.entries) for (a in AssistMode.entries) {
             val e = GameEngine(mazeFor(d, 3), d, a, 2f)

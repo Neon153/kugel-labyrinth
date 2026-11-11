@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Eckige Uhren. Runde Displays: values-round/dimens.xml -->
+<resources>
+    <dimen name="screen_inset_horizontal">10dp</dimen>
+    <dimen name="screen_inset_top">16dp</dimen>
+    <dimen name="screen_inset_bottom">24dp</dimen>
+    <dimen name="hud_margin">8dp</dimen>
+</resources>

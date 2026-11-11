@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Menü der Uhr: fokussierbare ScrollView, damit die Krone (Rotary-Eingabe) scrollt -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/screen_inset_horizontal"
+        android:paddingTop="@dimen/screen_inset_top"
+        android:paddingEnd="@dimen/screen_inset_horizontal"
+        android:paddingBottom="@dimen/screen_inset_bottom">
+
+        <TextView
+            style="@style/WearTitle"
+            android:text="@string/app_name" />
+
+        <Button
+            android:id="@+id/buttonDifficulty"
+            style="@style/WearChip" />
+
+        <Button
+            android:id="@+id/buttonAssist"
+            style="@style/WearChip" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/buttonSlower"
+                style="@style/WearRoundButton"
+                android:contentDescription="@string/menu_slower_description"
+                android:text="@string/menu_slower" />
+
+            <TextView
+                android:id="@+id/textSpeed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFeatureSettings="tnum"
+                android:gravity="center"
+                android:textColor="@color/text"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/buttonFaster"
+                style="@style/WearRoundButton"
+                android:contentDescription="@string/menu_faster_description"
+                android:text="@string/menu_faster" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textMazeSize"
+            style="@style/WearSmallText" />
+
+        <TextView
+            android:id="@+id/textBest"
+            style="@style/WearSmallText"
+            android:layout_marginTop="2dp" />
+
+        <Button
+            android:id="@+id/buttonStart"
+            style="@style/WearStartChip"
+            android:text="@string/menu_start" />
+    </LinearLayout>
+</ScrollView>

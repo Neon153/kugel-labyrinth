@@ -12,12 +12,14 @@ import android.text.TextPaint
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.Choreographer
-import android.view.MotionEvent
 import android.view.View
-import kotlin.math.max
+import com.example.kugellabyrinth.core.R
 
 /**
- * Zeichnet das Labyrinth und treibt die [GameEngine] an.
+ * Zeichnet das Labyrinth und treibt die [GameEngine] an. Wird von Handy- und Uhr-App gemeinsam genutzt.
+ *
+ * - [Shape.RECT] (Handy): Labyrinth über die volle Breite, Zeilen aus der Höhe.
+ * - [Shape.ROUND] (Uhr): quadratisches Labyrinth im runden Display.
  *
  * Performance:
  *  - Takt über [Choreographer] (vsync-synchron, Zeitstempel des Frames).
@@ -25,6 +27,9 @@ import kotlin.math.max
  *  - Das statische Labyrinth wird einmal pro Labyrinth in eine Bitmap gerendert; pro Frame werden nur
  *    diese Bitmap und drei Kreise gezeichnet.
  *  - Keine Allokationen pro Frame (Callbacks mit primitiven Parametern, kein Boxing).
+ *
+ * Bedienung: Antippen startet (READY) bzw. meldet [Listener.onFinishedTapped] (FINISHED).
+ * Langes Drücken kann die App über setOnLongClickListener belegen.
  */
 class GameView @JvmOverloads constructor(
     context: Context,
@@ -36,6 +41,9 @@ class GameView @JvmOverloads constructor(
         fun onTimeChanged(seconds: Float)
         fun onStartRequested()
         fun onFinished(seconds: Float)
+
+        /** Antippen des Spielfelds nach Erreichen des Ziels. */
+        fun onFinishedTapped() {}
     }
 
     /** Quelle der Neigung in m/s² auf Bildschirmachsen. */
@@ -44,11 +52,24 @@ class GameView @JvmOverloads constructor(
         val tiltY: Float
     }
 
+    /** Form der Spielfläche. */
+    enum class Shape { RECT, ROUND }
+
     var listener: Listener? = null
     var tiltSource: TiltSource? = null
     var difficulty = Difficulty.MEDIUM
     var assist = AssistMode.SOFTWARE
     var speedFactor = 1f
+
+    /** Vor dem ersten Layout setzen. */
+    var shape = Shape.RECT
+
+    /** Text unter „Bereit?“ (gerätespezifisch, z. B. Handy vs. Arm). */
+    var readyBody: String = ""
+        set(value) {
+            field = value
+            buildTextLayouts()
+        }
 
     var engine: GameEngine? = null
         private set
@@ -65,7 +86,7 @@ class GameView @JvmOverloads constructor(
     private var mazeBitmap: Bitmap? = null
 
     // Paints
-    private val bgColor = Color.parseColor("#111827")
+    private val rectBackground = Color.parseColor("#111827")
     private val floorPaint = Paint().apply { color = Color.parseColor("#1F2937") }
     private val wallPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#6B7280") }
     private val goalPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#34D399") }
@@ -86,8 +107,12 @@ class GameView @JvmOverloads constructor(
         textSize = sp(16f)
     }
     private val readyTitle = context.getString(R.string.ready_title)
-    private val readyBody = context.getString(R.string.ready_body)
     private var readyLayout: StaticLayout? = null
+
+    // Ergebnis-Overlay (optional; die Handy-App nutzt stattdessen einen Dialog)
+    private var resultTitle: String? = null
+    private var resultBody = ""
+    private var resultLayout: StaticLayout? = null
 
     init {
         isClickable = true
@@ -102,27 +127,40 @@ class GameView @JvmOverloads constructor(
     // Steuerung von außen
     // ------------------------------------------------------------------------------------
 
+    /** Schriftgrößen der Overlays in sp (Uhr: kleiner als Handy). */
+    fun setTextSizes(titleSp: Float, bodySp: Float) {
+        titlePaint.textSize = sp(titleSp)
+        bodyPaint.textSize = sp(bodySp)
+        buildTextLayouts()
+        invalidate()
+    }
+
+    /** Zeigt nach dem Ziel ein Ergebnis-Overlay auf dem Spielfeld. */
+    fun showResult(title: String, body: String) {
+        resultTitle = title
+        resultBody = body
+        buildTextLayouts()
+        invalidate()
+    }
+
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         if (w <= 0 || h <= 0) return
-        val textWidth = (w * 0.85f).toInt()
-        readyLayout = StaticLayout.Builder
-            .obtain(readyBody, 0, readyBody.length, bodyPaint, textWidth)
-            .setAlignment(Layout.Alignment.ALIGN_CENTER)
-            .build()
+        buildTextLayouts()
         newMaze()
     }
 
-    /** Neues Labyrinth passend zur Viewgröße. */
+    /** Neues Labyrinth passend zu Viewgröße und Form. */
     fun newMaze() {
         if (width <= 0 || height <= 0) return
-        val cols = difficulty.cols
-        cell = width.toFloat() / cols
-        val rows = max(MIN_ROWS, (height / cell).toInt())
-        if (rows * cell > height) cell = height.toFloat() / rows
-        offX = (width - cols * cell) / 2f
-        offY = (height - rows * cell) / 2f
-        val maze = Maze(cols, rows)
+        val layout = when (shape) {
+            Shape.RECT -> MazeLayout.fillRect(width, height, difficulty.cols)
+            Shape.ROUND -> MazeLayout.squareInCircle(width, height, difficulty.watchCols)
+        }
+        cell = layout.cell
+        offX = layout.offsetX
+        offY = layout.offsetY
+        val maze = Maze(layout.cols, layout.rows)
         engine = GameEngine(maze, difficulty, assist, speedFactor)
         renderMazeBitmap(maze)
         afterReset()
@@ -145,10 +183,24 @@ class GameView @JvmOverloads constructor(
     }
 
     private fun afterReset() {
+        resultTitle = null
         cancelFrame()
         listener?.onTimeChanged(0f)
         invalidate()
     }
+
+    private fun buildTextLayouts() {
+        if (width <= 0) return
+        val textWidth = (width * if (shape == Shape.ROUND) ROUND_TEXT_WIDTH else RECT_TEXT_WIDTH).toInt()
+        readyLayout = centered(readyBody, textWidth)
+        resultLayout = centered(resultBody, textWidth)
+    }
+
+    private fun centered(text: String, textWidth: Int): StaticLayout =
+        StaticLayout.Builder
+            .obtain(text, 0, text.length, bodyPaint, textWidth)
+            .setAlignment(Layout.Alignment.ALIGN_CENTER)
+            .build()
 
     // ------------------------------------------------------------------------------------
     // Spielschleife
@@ -195,22 +247,21 @@ class GameView @JvmOverloads constructor(
     }
 
     // ------------------------------------------------------------------------------------
-    // Eingabe
+    // Eingabe (Touch-Auswertung übernimmt View: Klick, langes Drücken, Bedienungshilfen)
     // ------------------------------------------------------------------------------------
-
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (event.actionMasked == MotionEvent.ACTION_UP) performClick()
-        return true
-    }
 
     override fun performClick(): Boolean {
         super.performClick()
         val e = engine ?: return false
-        if (e.state == GameEngine.State.READY) {
-            listener?.onStartRequested()
-            e.start()
-            scheduleFrame()
-            invalidate()
+        when (e.state) {
+            GameEngine.State.READY -> {
+                listener?.onStartRequested()
+                e.start()
+                scheduleFrame()
+                invalidate()
+            }
+            GameEngine.State.FINISHED -> listener?.onFinishedTapped()
+            GameEngine.State.RUNNING -> Unit
         }
         return true
     }
@@ -225,7 +276,8 @@ class GameView @JvmOverloads constructor(
         val bmp = if (old != null && old.width == width && old.height == height) old
         else Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val c = Canvas(bmp)
-        c.drawColor(bgColor)
+        // Uhr: schwarz (AMOLED spart Strom, Ränder außerhalb des Kreises sind ohnehin unsichtbar)
+        c.drawColor(if (shape == Shape.ROUND) Color.BLACK else rectBackground)
         c.save()
         c.translate(offX, offY)
         c.scale(cell, cell)
@@ -254,19 +306,28 @@ class GameView @JvmOverloads constructor(
         canvas.drawCircle(px, py, r, ballPaint)
         canvas.drawCircle(px - r * 0.3f, py - r * 0.3f, r * 0.3f, highlightPaint)
 
-        if (e.state == GameEngine.State.READY) {
-            canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), dimPaint)
-            val layout = readyLayout ?: return
-            val top = height / 2f - (titlePaint.textSize * 1.6f + layout.height) / 2f
-            canvas.drawText(readyTitle, width / 2f, top + titlePaint.textSize, titlePaint)
-            canvas.save()
-            canvas.translate((width - layout.width) / 2f, top + titlePaint.textSize * 1.6f)
-            layout.draw(canvas)
-            canvas.restore()
+        when (e.state) {
+            GameEngine.State.READY -> drawOverlay(canvas, readyTitle, readyLayout)
+            GameEngine.State.FINISHED -> resultTitle?.let { drawOverlay(canvas, it, resultLayout) }
+            GameEngine.State.RUNNING -> Unit
         }
     }
 
+    private fun drawOverlay(canvas: Canvas, title: String, body: StaticLayout?) {
+        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), dimPaint)
+        val bodyHeight = body?.height ?: 0
+        val top = height / 2f - (titlePaint.textSize * 1.6f + bodyHeight) / 2f
+        canvas.drawText(title, width / 2f, top + titlePaint.textSize, titlePaint)
+        if (body == null) return
+        canvas.save()
+        canvas.translate((width - body.width) / 2f, top + titlePaint.textSize * 1.6f)
+        body.draw(canvas)
+        canvas.restore()
+    }
+
     private companion object {
-        const val MIN_ROWS = 5
+        /** Textbreite der Overlays relativ zur Viewbreite. */
+        const val RECT_TEXT_WIDTH = 0.85f
+        const val ROUND_TEXT_WIDTH = 0.72f
     }
 }

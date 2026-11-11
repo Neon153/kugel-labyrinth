@@ -2,16 +2,17 @@ package com.example.kugellabyrinth
 
 /**
  * Schwierigkeit:
- *  - [cols]: Labyrinthbreite. Mehr Spalten = schmalere Gänge auf gleichem Bildschirm.
+ *  - [cols]: Labyrinthbreite auf dem Handy. Mehr Spalten = schmalere Gänge auf gleichem Bildschirm.
+ *  - [watchCols]: Seitenlänge des quadratischen Labyrinths auf der Uhr (watchCols × watchCols Felder).
  *  - [assistStrength]: Stärke der gewählten Unterstützung (1.0 = maximal, 0.0 = keine Hilfe).
  *
  * Bewusst frei von Android-Abhängigkeiten, damit Engine und Tests auf der JVM laufen.
  */
-enum class Difficulty(val cols: Int, val assistStrength: Float) {
-    EASY(8, 1.0f),
-    MEDIUM(10, 0.6f),
-    HARD(13, 0.3f),
-    PRO(14, 0.0f);
+enum class Difficulty(val cols: Int, val watchCols: Int, val assistStrength: Float) {
+    EASY(8, 5, 1.0f),
+    MEDIUM(10, 6, 0.6f),
+    HARD(13, 7, 0.3f),
+    PRO(14, 8, 0.0f);
 
     /** false = 0 % Hilfe; die Art der Unterstützung spielt dann keine Rolle. */
     val hasAssist: Boolean get() = assistStrength > 0f

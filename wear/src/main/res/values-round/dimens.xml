@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Runde Displays (Pixel Watch): größere Ränder oben und unten, damit Inhalte nicht vom Kreis
+    abgeschnitten werden; der untere Rand erlaubt, das letzte Element in die Mitte zu scrollen.
+-->
+<resources>
+    <dimen name="screen_inset_horizontal">20dp</dimen>
+    <dimen name="screen_inset_top">30dp</dimen>
+    <dimen name="screen_inset_bottom">56dp</dimen>
+    <dimen name="hud_margin">12dp</dimen>
+</resources>

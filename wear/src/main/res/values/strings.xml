@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kugel-Labyrinth</string>
+
+    <!-- Menü -->
+    <string name="menu_difficulty">Stufe: %1$s · Hilfe %2$d %%</string>
+    <string name="menu_assist">Hilfe-Art: %1$s</string>
+    <string name="menu_speed">Tempo %1$d %%</string>
+    <string name="menu_slower">−</string>
+    <string name="menu_faster">+</string>
+    <string name="menu_slower_description">Langsamer</string>
+    <string name="menu_faster_description">Schneller</string>
+    <string name="menu_maze_size">Labyrinth %1$d × %2$d</string>
+    <string name="menu_best">Bestzeit: %1$s</string>
+    <string name="menu_best_none">Bestzeit: –</string>
+    <string name="menu_start">Start</string>
+
+    <!-- Spiel -->
+    <string name="timer_initial">0,0 s</string>
+    <string name="mode_short">%1$s · %2$d %%</string>
+    <string name="ready_body">Arm bequem halten, Display zu dir. Antippen zum Starten.\nLang drücken: Neustart</string>
+    <string name="result_title">Geschafft!</string>
+    <string name="result_body">Zeit: %1$s\nBestzeit: %2$s</string>
+    <string name="result_record">Neuer Rekord!</string>
+    <string name="result_hint">Tippen: neues Labyrinth\nHalten: nochmal</string>
+</resources>

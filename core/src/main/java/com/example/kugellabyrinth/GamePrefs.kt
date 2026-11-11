@@ -2,8 +2,9 @@ package com.example.kugellabyrinth
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.kugellabyrinth.core.R
 
-/** Gespeicherte Einstellungen und Bestzeiten. */
+/** Gespeicherte Einstellungen und Bestzeiten (Handy und Uhr speichern jeweils lokal auf dem Gerät). */
 object GamePrefs {
     private const val FILE = "kugel_labyrinth"
     private const val KEY_DIFFICULTY = "difficulty"

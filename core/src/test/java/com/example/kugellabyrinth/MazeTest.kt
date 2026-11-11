@@ -15,6 +15,7 @@ class MazeTest {
             add(Maze(2 + rnd.nextInt(12), 2 + rnd.nextInt(25), rnd))
         }
         for (d in Difficulty.entries) add(Maze(d.cols, d.cols * 2, Random(d.ordinal)))
+        for (d in Difficulty.entries) add(Maze(d.watchCols, d.watchCols, Random(10 + d.ordinal)))
         add(Maze(7, 14, Random(1)))
         add(Maze(12, 26, Random(2)))
     }

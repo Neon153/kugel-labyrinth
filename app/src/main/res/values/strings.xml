@@ -24,14 +24,6 @@
     <string name="best_time">Bestzeit in dieser Einstellung: %1$s</string>
     <string name="best_time_none">Bestzeit in dieser Einstellung: –</string>
 
-    <!-- Kurzlabels -->
-    <string name="difficulty_easy">Leicht</string>
-    <string name="difficulty_medium">Mittel</string>
-    <string name="difficulty_hard">Schwer</string>
-    <string name="difficulty_pro">Profi</string>
-    <string name="assist_sensitivity">Empfindlichkeit</string>
-    <string name="assist_software">Software-Hilfe</string>
-    <string name="assist_none">Keine Hilfe</string>
 
     <!-- Spiel -->
     <string name="mode_format">%1$s · %2$s · Tempo %3$d %%</string>
@@ -40,10 +32,7 @@
     <string name="action_menu">Menü</string>
     <string name="action_new_maze">Neues Labyrinth</string>
     <string name="action_retry">Nochmal</string>
-    <string name="ready_title">Bereit?</string>
     <string name="ready_body">Halte das Handy bequem – diese Lage gilt als neutral.\nTippe zum Starten.</string>
-    <string name="game_area_description">Spielfeld. Antippen zum Starten, dann Handy kippen.</string>
-    <string name="no_sensor">Dieses Gerät hat keinen Lage-Sensor.</string>
     <string name="result_title">Geschafft!</string>
     <string name="result_message">Zeit: %1$s\nBestzeit: %2$s</string>
     <string name="result_record">Neuer Rekord!</string>

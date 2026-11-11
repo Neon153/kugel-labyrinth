@@ -13,8 +13,8 @@ android {
         applicationId = "com.example.kugellabyrinth"
         minSdk = 24
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.3"
+        versionCode = 5
+        versionName = "1.4.0"
     }
 
     buildTypes {
@@ -43,6 +43,6 @@ kotlin {
 }
 
 dependencies {
-    // Die App selbst nutzt nur das Android-Framework + Kotlin-Stdlib.
-    testImplementation("junit:junit:4.13.2")
+    // Gemeinsame Spiellogik, Sensor und Spielfeld. Sonst nur Android-Framework + Kotlin-Stdlib.
+    implementation(project(":core"))
 }

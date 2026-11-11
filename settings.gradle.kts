@@ -14,4 +14,8 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "KugelLabyrinth"
-include(":app")
+
+// core: gemeinsame Spiellogik, Sensor und Spielfeld (Android-Bibliothek)
+// app:  Handy-App
+// wear: Uhr-App für Wear OS (Pixel Watch)
+include(":core", ":app", ":wear")

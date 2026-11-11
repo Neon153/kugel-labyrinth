@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gemeinsame Texte für Handy- und Uhr-App -->
+<resources>
+    <!-- Schwierigkeitsstufen und Hilfe-Arten -->
+    <string name="difficulty_easy">Leicht</string>
+    <string name="difficulty_medium">Mittel</string>
+    <string name="difficulty_hard">Schwer</string>
+    <string name="difficulty_pro">Profi</string>
+    <string name="assist_sensitivity">Empfindlichkeit</string>
+    <string name="assist_software">Software-Hilfe</string>
+    <string name="assist_none">Keine Hilfe</string>
+
+    <!-- Spielfeld -->
+    <string name="ready_title">Bereit?</string>
+    <string name="game_area_description">Spielfeld. Antippen zum Starten, dann neigen, um die Kugel zu rollen.</string>
+    <string name="no_sensor">Dieses Gerät hat keinen Lage-Sensor.</string>
+</resources>

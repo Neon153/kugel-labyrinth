@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import com.example.kugellabyrinth.core.R as CoreR
 
 /** Spielbildschirm: verbindet Sensor, GameView und Ergebnisdialog. */
 class GameActivity : Activity(), GameView.Listener {
@@ -31,11 +32,12 @@ class GameActivity : Activity(), GameView.Listener {
 
         textTimer = findViewById(R.id.textTimer)
         val difficultyLabel = getString(difficulty.labelRes())
-        val assistLabel = getString(if (difficulty.hasAssist) assist.labelRes() else R.string.assist_none)
+        val assistLabel = getString(if (difficulty.hasAssist) assist.labelRes() else CoreR.string.assist_none)
         findViewById<TextView>(R.id.textMode).text =
             getString(R.string.mode_format, difficultyLabel, assistLabel, speedPercent)
 
         game = findViewById(R.id.gameView)
+        game.readyBody = getString(R.string.ready_body)
         game.difficulty = difficulty
         game.assist = assist
         game.speedFactor = BallSpeed.factor(speedPercent)
@@ -46,7 +48,7 @@ class GameActivity : Activity(), GameView.Listener {
         findViewById<Button>(R.id.buttonMenu).setOnClickListener { finish() }
 
         if (!tilt.isAvailable) {
-            Toast.makeText(this, R.string.no_sensor, Toast.LENGTH_LONG).show()
+            Toast.makeText(this, CoreR.string.no_sensor, Toast.LENGTH_LONG).show()
         }
     }
 
