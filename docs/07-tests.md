@@ -4,10 +4,11 @@
 
 | Ebene | Was | Werkzeug | Automatisiert | Status |
 |---|---|---|---|---|
-| Unit-Tests | Labyrinth, Physik, Kollision, Hilfen, Tempo, Zeitformat | JUnit 4.13.2 auf der JVM | ✔ (lokal + CI) | 22/22 bestanden |
-| Statische Prüfung | Kompilieren mit Warnungen als Fehler; Ressourcen-Referenzen und Formatplatzhalter | Kotlin-Compiler `-Werror`, Prüfskript | ✔ (lokal) | bestanden |
+| Unit-Tests | Labyrinth, Physik, Kollision, Hilfen, Tempo, Zeitformat, Platzierung auf Handy und Uhr | JUnit 4.13.2 auf der JVM (Modul `core`) | ✔ (lokal + CI) | 27/27 bestanden |
+| Statische Prüfung | Jedes Modul (`core`, `app`, `wear`) einzeln mit Warnungen als Fehler kompiliert; Ressourcen-Referenzen und Formatplatzhalter je Modul | Kotlin-Compiler `-Werror`, Prüfskript | ✔ (lokal) | bestanden |
 | Build + Lint | Echter Android-Build mit SDK 35, Android Lint | Gradle, GitHub Actions | ✔ (CI) | bestanden (7.3) |
-| Gerätetest | Sensor, Spielgefühl, Lebenszyklus, Darstellung | manuell, Testplan 7.4 | ✘ | **offen** |
+| Gerätetest Handy | Sensor, Spielgefühl, Lebenszyklus, Darstellung | manuell, Testplan 7.4 (MT) | ✘ | **offen** |
+| Gerätetest Uhr | Armsteuerung, Lesbarkeit, Krone, Gesten, Display-Verhalten, Akku | manuell, Testplan 7.4 (MW) | ✘ | **offen** |
 
 Die Spiellogik ist bewusst Android-frei ([ADR-002](06-entscheidungen.md#adr-002-spiellogik-ohne-android-abhängigkeiten)). Deshalb lassen sich ganze Spielverläufe mit einem simulierten Spieler testen.
 
@@ -15,7 +16,7 @@ Die Spiellogik ist bewusst Android-frei ([ADR-002](06-entscheidungen.md#adr-002-
 
 ## 7.2 Automatisierte Testfälle
 
-### `MazeTest` – Labyrinth (36 Labyrinthe je Test: 30 zufällige Größen 2–13 × 2–26 Zellen, die vier Stufengrößen sowie 7 × 14 und 12 × 26)
+### `MazeTest` – Labyrinth (40 Labyrinthe je Test: 30 zufällige Größen 2–13 × 2–26 Zellen, die vier Handy-Stufengrößen, die vier Uhr-Größen 5 × 5 … 8 × 8 sowie 7 × 14 und 12 × 26)
 
 | # | Test | Prüft | Anforderung |
 |---|---|---|---|
@@ -43,7 +44,17 @@ Die Spiellogik ist bewusst Android-frei ([ADR-002](06-entscheidungen.md#adr-002-
 | T-17 | `randomMaxTilt_atMaxSpeed_withLagSpikes_neverPenetratesWalls` | 5 × 4 000 Frames zufälliges Vollkippen (±8 m/s²) bei „Profi“ und 200 %, zufällig etwa jeder 10. Frame ein 200-ms-Ruckler: nie in einer Wand | FA-03, NFA-06 |
 | T-18 | `reset_restoresStartState` | Neustart setzt Position, Zeit und Zustand zurück; vor `start()` keine Bewegung | FA-13 |
 | T-19 | `ballSpeed_menuValues` | Tempo-Raster: Begrenzung auf 50/200, Rundung auf 10er-Schritte | FA-10 |
-| T-20 | `benchmark_physicsIsCheap` | Laufzeit pro 60-Hz-Frame bei „Schwer“, 200 %, Software-Hilfe < 200 µs (gemessen 0,86 µs) | NFA-01 |
+| T-20 | `benchmark_physicsIsCheap` | Laufzeit pro 60-Hz-Frame bei „Schwer“, 200 %, Software-Hilfe < 200 µs (gemessen 0,64 µs) | NFA-01 |
+| T-23 | `watchMazes_everyCombination_atEverySpeed_isSolvable_withoutWallPenetration` | Uhr-Labyrinthe: 4 Stufen (5 × 5 … 8 × 8) × 2 Hilfe-Arten × 3 Tempi × 2 Labyrinthe = 48 vollständige Spiele ohne Wanddurchdringung | FA-03, FA-18, NFA-06 |
+
+### `MazeLayoutTest` – Platzierung auf Handy und Uhr
+
+| # | Test | Prüft | Anforderung |
+|---|---|---|---|
+| T-24 | `fillRect_usesFullWidth_onTallScreens` | Handy: volle Breite, Zeilen aus der Höhe, vertikal zentriert | FA-02 |
+| T-25 | `fillRect_shrinksCells_whenMinimumRowsDoNotFit` | Handy: bei sehr flacher Fläche mindestens 5 Zeilen, Zellen verkleinert, alles passt | FA-02 |
+| T-26 | `squareInCircle_isSquare_centered_andInsideTheRoundDisplay` | Uhr (408, 456, 384 px und nicht quadratische Fläche), alle Stufen: quadratisch, zentriert, alle vier Ecken im Kreis, ≥ 95 % des Inkreis-Quadrats genutzt | NFA-14 |
+| T-27 | `watchCells_areLargeEnough_onPixelWatch5_41mm` | 41-mm-Uhr, „Profi“: Zelle ≥ 32 px, Kugel ≥ 1,4 mm Durchmesser | NFA-14 |
 
 ### `FormatTest` – Zeitanzeige
 
@@ -54,30 +65,31 @@ Die Spiellogik ist bewusst Android-frei ([ADR-002](06-entscheidungen.md#adr-002-
 
 ## 7.3 Testergebnisse
 
-### Lokaler Lauf
+### Lokaler Lauf (Version 1.4.0)
 
 | | |
 |---|---|
-| Datum | 30.10.2026 |
-| Umgebung | OpenJDK 21.0.12, Kotlin 2.0.21, JUnit 4.13.2, Linux |
+| Datum | 11.11.2026 |
+| Umgebung | OpenJDK 21, Kotlin 2.0.21, JUnit 4.13.2, Linux |
 | Ausführung | Kotlin-Compiler + JUnitCore direkt (ohne Gradle, da in dieser Umgebung kein Android SDK verfügbar war) |
-| Ergebnis | **22 von 22 bestanden**, Laufzeit 0,6 s |
-| Messwert T-20 | 0,86 µs Physik pro 60-Hz-Frame (8 Schritte à 1/480 s) |
+| Ergebnis | **27 von 27 bestanden**, Laufzeit 0,6 s |
+| Messwert T-20 | 0,64 µs Physik pro 60-Hz-Frame (8 Schritte à 1/480 s) |
 
-Zusätzlich wurde der gesamte App-Code (inkl. Activities, View, Sensor) mit `-Werror` gegen eine Nachbildung der verwendeten Android-API kompiliert, ohne Fehler oder Warnungen. Ein Prüfskript hat alle `@…`-Referenzen in XML, alle `R.…`-Referenzen im Code und die Anzahl der Formatargumente bei `getString` kontrolliert: ohne Befund.
+Zusätzlich wurden `core`, `app` und `wear` einzeln mit `-Werror` gegen eine Nachbildung der verwendeten Android-API kompiliert, ohne Fehler oder Warnungen. Ein Prüfskript hat je Modul alle `@…`-Referenzen in XML, alle `R.…`/`CoreR.…`-Referenzen im Code und die Anzahl der Formatargumente bei `getString` kontrolliert: ohne Befund.
 
-### CI-Lauf (GitHub Actions)
+### CI-Läufe (GitHub Actions)
 
-| | |
-|---|---|
-| Datum | 30.10.2026, Lauf-ID 41128812406, Commit `6cdfa39` |
-| Umgebung | GitHub Actions `ubuntu-latest`, Temurin JDK 17, Gradle 8.9 (Wrapper, Prüfsumme validiert), Android SDK Platform 35 |
-| Ergebnis | **Erfolgreich** in 3 min 22 s: `testDebugUnitTest` ✔, `lintDebug` ✔ (keine Lint-Fehler), `assembleDebug` ✔ |
-| Artefakte | Debug-APK (≈ 0,8 MB gepackt), Test- und Lint-Berichte |
+| Datum | Lauf | Stand | Ergebnis |
+|---|---|---|---|
+| 30.10.2026 | 41128812406 | Version 1.3.0 (`6cdfa39`) | ✔ Unit-Tests, Lint, Handy-APK |
+| 30.10.2026 | 41129414086 | aktualisierte Actions (`0a717ad`) | ✔ ohne Warnungen |
+| 11.11.2026 | 43103924438 | Version 1.4.0, Branch `wear-os` (`97f28a4`) | ✔ Unit-Tests (alle Module), Lint (`core`, `app`, `wear`), Handy-APK (≈ 0,8 MB gepackt), Uhr-APK (≈ 0,8 MB gepackt) |
 
-Damit ist der Code erstmals mit dem echten Android SDK kompiliert und gegen Android Lint geprüft. Den aktuellen Stand zeigt das Badge in der [README](../README.md).
+Umgebung: GitHub Actions `ubuntu-latest`, Temurin JDK 17, Gradle 8.9 (Wrapper, Prüfsumme validiert), Android SDK Platform 35. Damit sind beide Apps mit dem echten Android SDK kompiliert und gegen Android Lint geprüft, einschließlich der Wear-OS-spezifischen Lint-Regeln. Den aktuellen Stand zeigt das Badge in der [README](../README.md).
 
 ## 7.4 Manuelle Gerätetests
+
+### Handy
 
 Durchführung auf mindestens einem echten Gerät, idealerweise zusätzlich auf einem 120-Hz-Gerät und einem Gerät mit Android 15.
 
@@ -98,14 +110,33 @@ Durchführung auf mindestens einem echten Gerät, idealerweise zusätzlich auf e
 | MT-13 | TalkBack | TalkBack an, Spielfeld fokussieren, Doppeltippen | Spielfeld wird angesagt; Doppeltippen startet das Spiel | NFA-10 | offen |
 | MT-14 | Android 15 | Auf Android-15-Gerät Menü und Spiel öffnen | Inhalte nicht unter Status- oder Navigationsleiste | NFA-07 | offen |
 
-**Protokoll:** Gerät, Android-Version, Bildrate, Datum, Ergebnis (✔ / ✘ + Beschreibung) je Testfall hier oder als GitHub-Issue festhalten.
+### Uhr (Pixel Watch 5)
+
+Durchführung auf der Pixel Watch 5 (41 mm oder 45 mm), Uhr am linken Handgelenk, sofern nicht anders angegeben.
+
+| ID | Testfall | Schritte | Erwartetes Ergebnis | Anf. | Status |
+|---|---|---|---|---|---|
+| MW-01 | Installation und Start | Uhr-APK per WLAN-Debugging installieren, App aus der App-Liste starten | Menü erscheint mit Titel, Stufe, Hilfe-Art, Tempo, Start; nichts am Rand abgeschnitten | FA-16, NFA-14 | offen |
+| MW-02 | Krone und Menü | Krone drehen; jeden Chip antippen; −/+ drücken | Menü scrollt mit der Krone; Stufe schaltet Leicht → … → Profi → Leicht; Hilfe-Art wechselt, bei Profi ausgegraut; Tempo 50–200 % | FA-18, FA-19 | offen |
+| MW-03 | Einstellungen bleiben | Auswahl ändern, App schließen, neu öffnen | Letzte Auswahl angezeigt | FA-14, FA-18 | offen |
+| MW-04 | Richtungen | Spiel starten; Display von dir weg / zu dir kippen (Unterarm drehen); Hand heben / senken | Kugel rollt Richtung 12 / 6 Uhr bzw. 9 / 3 Uhr; am rechten Handgelenk ebenfalls jeweils zur tieferen Displayseite | FA-17 | offen |
+| MW-05 | Kalibrierung in Ablesehaltung | Arm angewinkelt, Display schräg zum Gesicht, antippen | Kugel bleibt liegen; beide Achsen reagieren gleich stark | FA-11, FA-17 | offen |
+| MW-06 | Spielbarkeit je Stufe | Jede Stufe bei 100 % Tempo durchspielen | Kugel und Wände klar erkennbar; Ziel erreichbar; Bewegung flüssig | FA-18, NFA-14 | offen |
+| MW-07 | Display bleibt an | Während des Spiels den Unterarm weit drehen und 30 s spielen | Display bleibt an und dunkelt nicht ab; falls doch: Spiel pausiert und läuft danach ohne Zeitsprung weiter | NFA-13, Risiko R-9 | offen |
+| MW-08 | Gesten | Während des Spiels lang drücken; nach dem Ziel antippen bzw. lang drücken; nach rechts wischen | Neustart mit Haptik; neues bzw. gleiches Labyrinth; zurück zum Menü | FA-19 | offen |
+| MW-09 | Ergebnis | Labyrinth bis ins Ziel spielen | Overlay mit Zeit, Bestzeit, beim ersten Mal „Neuer Rekord!“; Text vollständig im Kreis lesbar | FA-12, FA-19 | offen |
+| MW-10 | Pause | Während des Spiels Seitentaste oder Krone drücken, 10 s warten, zurückkehren | Zeit hat nicht weitergezählt | NFA-13 | offen |
+| MW-11 | Akku | Akkustand notieren, 10 min spielen | Verbrauch im üblichen Rahmen für eine aktive App mit Display an | NFA-15 | offen |
+| MW-12 | Ohne Handy | Bluetooth am Handy aus, App starten und spielen | Funktioniert vollständig | FA-16 | offen |
+
+**Protokoll:** Gerät, Android-/Wear-OS-Version, Bildrate, Datum, Ergebnis (✔ / ✘ + Beschreibung) je Testfall hier oder als GitHub-Issue festhalten.
 
 ## 7.5 Abdeckungsmatrix
 
 | Anforderung | Umsetzung | Automatischer Nachweis | Manueller Nachweis |
 |---|---|---|---|
 | FA-01 Neigungssteuerung | `TiltInput`, `GameEngine.step` | T-07, T-09 | MT-05 |
-| FA-02 Perfektes Labyrinth | `Maze.generate`, `Maze.bfs` | T-01, T-02, T-03 | – |
+| FA-02 Perfektes Labyrinth | `Maze.generate`, `Maze.bfs`, `MazeLayout.fillRect` | T-01, T-02, T-03, T-24, T-25 | – |
 | FA-03 Keine Wanddurchdringung | `GameEngine.collide`, Zellenindex | T-02, T-04, T-05, T-07, T-17 | – |
 | FA-04 Ziel und Spielende | `GameEngine.step`, `GameActivity.onFinished` | T-07, T-16 | MT-10 |
 | FA-05 Stufen | `Difficulty` | T-07, T-14 | MT-07 |
@@ -114,7 +145,7 @@ Durchführung auf mindestens einem echten Gerät, idealerweise zusätzlich auf e
 | FA-08 0 % Hilfe | `Difficulty.PRO` | T-13 | MT-03 |
 | FA-09 Menü | `MenuActivity`, `activity_menu.xml` | – | MT-01, MT-03 |
 | FA-10 Tempo-Regler | `BallSpeed`, `GameEngine.speedFactor` | T-11, T-12, T-19 | MT-04 |
-| FA-11 Kalibrierung | `TiltInput.calibrate` | – | MT-06 |
+| FA-11 Kalibrierung | `TiltInput.calibrate` | – | MT-06, MW-05 |
 | FA-12 Zeit/Bestzeit | `GameEngine.elapsed`, `Format`, `GamePrefs` | T-21, T-22 | MT-10 |
 | FA-13 Neustart/Neu/Menü | `GameView.restart/newMaze`, Dialog | T-18 | MT-10 |
 | FA-14 Persistenz | `GamePrefs` | – | MT-02 |
@@ -131,4 +162,11 @@ Durchführung auf mindestens einem echten Gerät, idealerweise zusätzlich auf e
 | NFA-10 Bedienbarkeit | `GameView.performClick`, Styles (48 dp) | CI-Lint | MT-13 |
 | NFA-11 Lokalisierung | `strings.xml` | T-21, Ressourcen-Prüfung | – |
 | NFA-12 Datenschutz | Manifest ohne Berechtigungen | CI-Lint | – |
-| NFA-13 Energie/Pause | `onPause` → Sensor ab, Frames gestoppt | – | MT-11 |
+| NFA-13 Energie/Pause | `onPause` → Sensor ab, Frames gestoppt | – | MT-11, MW-07, MW-10 |
+| FA-16 Eigenständige Uhr-App | Modul `wear`, Manifest `standalone` | CI-Build + Lint (`wear`) | MW-01, MW-12 |
+| FA-17 Steuerung mit dem Arm | `TiltInput` (gemeinsam), Fachkonzept 3.9.1 | T-23 (Physik der Uhr-Labyrinthe) | MW-04, MW-05 |
+| FA-18 Gleiche Optionen auf der Uhr | `Difficulty.watchCols`, `WearMenuActivity` | T-23 | MW-02, MW-03, MW-06 |
+| FA-19 Uhrgerechte Bedienung | `WearGameActivity`, `GameView.showResult`/Long-Click | – | MW-02, MW-08, MW-09 |
+| NFA-14 Darstellung Uhr | `MazeLayout.squareInCircle`, `values-round` | T-26, T-27 | MW-01, MW-06 |
+| NFA-15 Energie Uhr | Schwarzer Hintergrund, Lebenszyklus | – | MW-11 |
+| NFA-16 Gemeinsame Logik | Modul `core` | alle T-Tests decken Handy und Uhr ab | – |

@@ -1,12 +1,12 @@
 # 3 Fachkonzept: Algorithmen und Physik
 
-Dieses Dokument beschreibt die Verfahren hinter dem Spiel so, dass sie ohne Code nachvollziehbar sind. Alle Zahlenwerte entsprechen App-Version 1.3.0. Die Konstanten stehen im `companion object` von `GameEngine.kt` bzw. `Maze.kt`.
+Dieses Dokument beschreibt die Verfahren hinter dem Spiel so, dass sie ohne Code nachvollziehbar sind. Alle Zahlenwerte entsprechen Version 1.4.0. Die Konstanten stehen im `companion object` von `GameEngine.kt`, `Maze.kt` bzw. `MazeLayout.kt` (Modul `core`). Handy- und Uhr-App verwenden dieselben Verfahren; die Besonderheiten der Uhr stehen in [3.9](#39-uhr-version-pixel-watch-5).
 
 ## 3.1 Labyrinth-Erzeugung (`Maze`)
 
 ### Raster
 
-Das Spielfeld ist ein Raster aus `cols × rows` quadratischen Zellen. Die Spaltenzahl kommt aus der Schwierigkeitsstufe (8 / 10 / 13 / 14). Die Zeilenzahl ergibt sich aus dem Seitenverhältnis der Spielfläche: `rows = max(5, ⌊Höhe / Zellgröße⌋)` mit `Zellgröße = Breite / cols`. Das Raster wird auf der Fläche zentriert.
+Das Spielfeld ist ein Raster aus `cols × rows` quadratischen Zellen. Auf dem **Handy** kommt die Spaltenzahl aus der Schwierigkeitsstufe (8 / 10 / 13 / 14), und die Zeilenzahl ergibt sich aus dem Seitenverhältnis der Spielfläche: `rows = max(5, ⌊Höhe / Zellgröße⌋)` mit `Zellgröße = Breite / cols`. Auf der **Uhr** ist das Labyrinth quadratisch (5 × 5 / 6 × 6 / 7 × 7 / 8 × 8), siehe [3.9.2](#392-labyrinth-im-runden-display). Die Berechnung steckt in `MazeLayout`; das Raster wird auf der Fläche zentriert.
 
 Jede Zelle speichert in einer 4-Bit-Maske, in welche Richtungen sie offen ist (Bit 0 rechts, 1 unten, 2 links, 3 oben).
 
@@ -216,3 +216,62 @@ Die Spielzeit ist exakt `Anzahl Physik-Schritte × 1/480 s`. Sie hängt also nur
 | `INDEX_REACH` | 0,36 | Zellen | Reichweite des Zellenindex (≥ Kugelradius) |
 | `FILTER_TAU` | 0,025 | s | Zeitkonstante des Sensor-Tiefpasses |
 | `SAMPLING_PERIOD_US` | 10 000 | µs | Sensor-Abtastperiode (100 Hz) |
+| `MazeLayout.MIN_ROWS` | 5 | – | Mindestzahl Zeilen auf dem Handy |
+| `MazeLayout.CIRCLE_FILL` | 0,96 | – | Anteil des Inkreis-Quadrats, den das Uhr-Labyrinth nutzt |
+| `Difficulty.watchCols` | 5 / 6 / 7 / 8 | Felder | Seitenlänge des Uhr-Labyrinths je Stufe |
+
+## 3.9 Uhr-Version (Pixel Watch 5)
+
+### 3.9.1 Steuerung mit dem Arm
+
+Die Uhr nutzt **dieselbe Kette** aus Sensor, Kalibrierung und Physik wie das Handy (3.2 bis 3.6). Der Lage-Sensor misst die Richtung der Schwerkraft relativ zum Display. Die Kugel rollt deshalb immer zur **tieferen Seite des Displays**, ganz gleich, ob das Handy oder der Arm geneigt wird.
+
+Für eine Uhr am linken Handgelenk, Display zum Gesicht, Krone Richtung Hand, verläuft die Unterarmachse entlang der Display-x-Achse (9 Uhr → 3 Uhr). Daraus ergibt sich:
+
+| Bewegung | Drehachse | Wirkung auf die Kugel |
+|---|---|---|
+| **Unterarm drehen** (Pronation/Supination), Display kippt von dir weg bzw. zu dir | Unterarmachse = Display-x | Kugel rollt Richtung 12 Uhr bzw. 6 Uhr |
+| **Hand heben/senken** (Unterarm im Ellbogen oder Handgelenk kippen) | quer zum Unterarm = Display-y | Kugel rollt Richtung 9 Uhr (Ellbogen) bzw. 3 Uhr (Hand) |
+| Arm waagerecht schwenken (um die senkrechte Achse) | senkrecht | **keine**, weil sich die Schwerkraftrichtung zum Display nicht ändert |
+| Ruckartige Armbewegung | – | keine: `TYPE_GRAVITY` filtert Bewegungsbeschleunigung heraus |
+
+Am rechten Handgelenk kehren sich die Richtungen der Armbewegungen entsprechend um. Die Regel „Kugel rollt nach unten“ gilt unverändert. Meldet Wear OS bei gedrehter Display-Ausrichtung eine Display-Rotation, sortiert `TiltInput` die Achsen wie auf dem Handy um (3.2).
+
+**Kalibrierung:** Beim Antippen wird die gerade gehaltene Armhaltung als „waagerecht“ übernommen, typischerweise mit dem Display schräg zum Gesicht. Dank der Rotationsmatrix (3.2) bleibt die Steuerung auch in dieser schrägen Haltung in beiden Achsen gleich empfindlich.
+
+**Bewegungsumfang:** Bequem sind etwa ±30–40° Unterarmdrehung. Das entspricht einer Neigung von 4,9–6,3 m/s² und damit dem vollen Steuerbereich bis zur Neigungsgrenze `MAX_TILT` = 6 m/s² (≈ 37°).
+
+### 3.9.2 Labyrinth im runden Display
+
+Das größte Rechteck in einem Kreis ist das Quadrat mit der Seitenlänge Durchmesser/√2. `MazeLayout.squareInCircle` nutzt davon 96 %, damit die Wände nicht direkt am Displayrand liegen:
+
+$$a = \frac{D}{\sqrt 2}\cdot 0{,}96, \qquad \text{Zelle} = \frac{a}{n}, \qquad \text{Rand oben/unten} = \frac{D - a}{2}$$
+
+Das Labyrinth belegt so 59 % der Displayfläche. In den freien Kreissegmenten oben und unten stehen die Zeit bzw. Stufe und Tempo.
+
+| Stufe | Felder | 41 mm (408 px): Zelle | Kugel ⌀ | 45 mm (456 px): Zelle | Kugel ⌀ |
+|---|---|---|---|---|---|
+| Leicht | 5 × 5 | 55 px (4,4 mm) | 2,5 mm | 62 px (4,9 mm) | 2,8 mm |
+| Mittel | 6 × 6 | 46 px (3,7 mm) | 2,1 mm | 52 px (4,1 mm) | 2,3 mm |
+| Schwer | 7 × 7 | 40 px (3,1 mm) | 1,8 mm | 44 px (3,5 mm) | 2,0 mm |
+| Profi | 8 × 8 | 35 px (2,7 mm) | 1,5 mm | 39 px (3,1 mm) | 1,7 mm |
+
+Bei 320 ppi. Das Labyrinth ist 22,0 mm (41 mm) bzw. 24,6 mm (45 mm) breit, der Rand oben und unten jeweils 65 bzw. 73 px.
+
+**Verworfene Alternativen** ([ADR-013](06-entscheidungen.md#adr-013-quadratisches-labyrinth-im-runden-display)): ein kreisförmiges Labyrinth (Theta-Labyrinth) würde die Fläche besser nutzen, braucht aber eine völlig andere Kollision (Bögen statt Rechtecke). Ein größeres Labyrinth mit mitlaufendem Ausschnitt würde den Überblick nehmen.
+
+### 3.9.3 Tempo auf der Uhr
+
+Die Skalierung aus 3.3 gilt unverändert: Die Kugel bewegt sich relativ zur **Labyrinthbreite** so schnell wie auf dem Handy. Weil das Uhr-Labyrinth nur etwa 22 mm breit ist, ist sie in Millimetern pro Sekunde entsprechend langsamer. Das ist gewollt, weil die Zellen auf der Uhr sehr klein sind. Für mehr Tempo gibt es den Regler (bis 200 %).
+
+### 3.9.4 Bedienung und Energie
+
+| Aktion | Uhr |
+|---|---|
+| Start + Kalibrierung | Spielfeld antippen |
+| Neustart (gleiches Labyrinth) | Spielfeld lang drücken (mit Haptik-Rückmeldung des Systems) |
+| Nach dem Ziel: neues Labyrinth | Antippen |
+| Zurück zum Menü | Nach rechts wischen |
+| Menü scrollen | Krone drehen oder wischen |
+
+Zum Energiesparen ist der Hintergrund schwarz (AMOLED-Pixel bleiben aus). Sensor und Spielschleife laufen nur, solange der Spielbildschirm sichtbar ist. Das Display (bis 60 Hz) bleibt während des Spiels per `keepScreenOn` an.

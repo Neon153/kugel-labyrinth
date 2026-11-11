@@ -3,20 +3,20 @@
 | | |
 |---|---|
 | **Projekt** | Kugel-Labyrinth (Android-App) |
-| **Dokumentversion** | 1.3 – gilt für App-Version 1.3.0 (versionCode 4) |
-| **Stand** | 30.10.2026 |
+| **Dokumentversion** | 1.4 – gilt für Version 1.4.0 (Handy: versionCode 5, Uhr: versionCode 100005) |
+| **Stand** | 11.11.2026 |
 | **Auftraggeber / Product Owner** | David (GitHub: Neon153) |
 
 Dieses Dokument beschreibt, **was** die App leisten muss. Wie das umgesetzt ist, steht in der [Architektur](02-architektur.md) und im [Fachkonzept](03-fachkonzept.md). Der Nachweis, dass die Anforderungen erfüllt sind, steht in der [Testdokumentation](07-tests.md).
 
 ## 1.1 Ausgangslage und Ziel
 
-Gesucht ist eine Smartphone-App nach dem Vorbild des klassischen Holz-Kugellabyrinths: Durch Kippen des Handys rollt eine digitale Kugel durch ein Labyrinth ins Ziel. Die App soll mehrere Schwierigkeitsstufen bieten. Diese unterscheiden sich darin, **wie stark** die Steuerung unterstützt wird. Für die **Art** der Unterstützung gibt es zwei Ansätze:
+Gesucht ist eine App nach dem Vorbild des klassischen Holz-Kugellabyrinths, zuerst für das Smartphone, ab Version 1.4 zusätzlich für die Google Pixel Watch 5: Durch Kippen des Handys rollt eine digitale Kugel durch ein Labyrinth ins Ziel. Die App soll mehrere Schwierigkeitsstufen bieten. Diese unterscheiden sich darin, **wie stark** die Steuerung unterstützt wird. Für die **Art** der Unterstützung gibt es zwei Ansätze:
 
 1. **Empfindlichkeit:** Die App reagiert weniger empfindlich auf das Kippen.
 2. **Software-Hilfe:** Die Software unterstützt aktiv, **ohne** die Empfindlichkeit des Sensors zu verändern.
 
-Schwierigkeit und Art der Unterstützung werden in einem Menü verwaltet.
+Schwierigkeit und Art der Unterstützung werden in einem Menü verwaltet. Auf der Uhr wird die Kugel durch Neigen und Drehen des Arms gesteuert.
 
 ## 1.2 Herkunft der Anforderungen
 
@@ -29,6 +29,7 @@ Die Anforderungen stammen aus dem ursprünglichen Auftrag und aus drei Feedback-
 | Feedback 2 | Kugel ist zu langsam, Bewegung muss flüssig sein; ohne Unterstützung zu einfach | NFA-02, NFA-04 |
 | Feedback 3 | Löcher entfernen (Lösungsweg zu leicht sichtbar); Kugelgeschwindigkeit im Menü einstellbar; Modus mit 0 % Hilfe | NFA-03, FA-10, FA-08 |
 | Rückfrage | Verhält sich die Kugel physikalisch? | NFA-05 |
+| Auftrag 2 | Spiel für die Google Pixel Watch 5; die Kugel wird durch Neigen und Rotieren des Arms bewegt; dokumentieren und auf GitHub pushen | FA-16 … FA-19, NFA-14 … NFA-16 |
 
 **Kennzeichnung der Quelle:** **A** = vom Auftraggeber gefordert, **E** = von der Entwicklung ergänzt (zur Vervollständigung oder als Voraussetzung für eine A-Anforderung).
 
@@ -54,6 +55,15 @@ Die Anforderungen stammen aus dem ursprünglichen Auftrag und aus drei Feedback-
 | **FA-14** | Gewählte Einstellungen und Bestzeiten bleiben nach dem Schließen der App erhalten. | E | SOLL | Nach Neustart der App ist die letzte Auswahl vorgewählt. |
 | **FA-15** | Die Software-Hilfe darf das Labyrinth nicht selbst lösen. | A (abgeleitet) | MUSS | Ohne Neigung bewegt sich die Kugel in keinem Modus. Die Hilfe kennt den Lösungsweg nicht und lenkt nur in Richtung der Spielereingabe. |
 
+### Uhr-App (Wear OS, ab Version 1.4)
+
+| ID | Anforderung | Quelle | Prio | Abnahmekriterium |
+|---|---|---|---|---|
+| **FA-16** | Das Spiel läuft als eigenständige App auf der Google Pixel Watch 5 (Wear OS), ohne Handy-Verbindung. | A | MUSS | Installation und Spiel funktionieren ohne gekoppeltes Handy; Manifest mit `com.google.android.wearable.standalone = true`. |
+| **FA-17** | Auf der Uhr wird die Kugel durch Neigen und Drehen des Arms gesteuert. | A | MUSS | Die Kugel rollt zur tieferen Seite des Displays: Unterarm drehen bewegt sie Richtung 12 bzw. 6 Uhr, Hand heben/senken Richtung 3 bzw. 9 Uhr (linkes Handgelenk). Stärkere Neigung führt zu stärkerer Beschleunigung. |
+| **FA-18** | Die Uhr-App bietet dieselben Spieloptionen wie die Handy-App. | A (abgeleitet) | MUSS | Vier Stufen inkl. 0 % Hilfe, beide Hilfe-Arten, Tempo 50–200 %, Kalibrierung beim Start, Zeit und Bestzeit je Einstellung. Uhr-Labyrinthe: 5 × 5, 6 × 6, 7 × 7, 8 × 8 Felder. |
+| **FA-19** | Uhrgerechte Bedienung | E | SOLL | Menü per Antippen und Krone; Spielstart per Antippen; Neustart per langem Drücken; nach dem Ziel Ergebnis auf dem Spielfeld, Antippen = neues Labyrinth; Wischen nach rechts = zurück. |
+
 ## 1.4 Nicht-funktionale Anforderungen
 
 | ID | Kategorie | Anforderung | Quelle | Prio | Abnahmekriterium / Messgröße |
@@ -64,20 +74,24 @@ Die Anforderungen stammen aus dem ursprünglichen Auftrag und aus drei Feedback-
 | **NFA-04** | Spielgefühl | Ohne Hilfe muss das Spiel fordernd sein. | A | MUSS | Stufe mit 0 % Hilfe und größtem Labyrinth; Tempo bis 200 % erhöhbar. Bewertung durch den Auftraggeber im Gerätetest. |
 | **NFA-05** | Realismus | Die Bewegung folgt einem physikalisch plausiblen Modell. | A | SOLL | Beschleunigung proportional zur Schwerkraftkomponente in der Ebene; Trägheit; Reibung; unvollständig elastischer Wandstoß. Bewusste Abweichungen sind in [Fachkonzept 3.4](03-fachkonzept.md#34-physikalische-einordnung) dokumentiert. |
 | **NFA-06** | Robustheit | Keine Wanddurchdringung („Tunneln“), auch bei 200 % Tempo und Rucklern bis 200 ms | E | MUSS | Bewegung pro Physik-Schritt ≤ 0,15 Zellen (< halber Kugelradius); Zeitsprünge auf 50 ms begrenzt. |
-| **NFA-07** | Plattform | Android 7.0 (API 24) bis Android 15 (API 35); Hochformat; Beschleunigungssensor erforderlich | E | MUSS | `minSdk 24`, `targetSdk 35`, `screenOrientation="portrait"`, `uses-feature accelerometer required`. |
+| **NFA-07** | Plattform | Handy: Android 7.0 (API 24) bis Android 15 (API 35), Hochformat. Uhr: Wear OS 3 (API 30) und neuer, Zielgerät Pixel Watch 5 (Wear OS 7). Beschleunigungssensor erforderlich | E | MUSS | Handy: `minSdk 24`, `targetSdk 35`, `screenOrientation="portrait"`. Uhr: `minSdk 30`, `targetSdk 35`, `uses-feature android.hardware.type.watch`. Beide: `uses-feature accelerometer required`. |
 | **NFA-08** | Wartbarkeit | Keine Fremdbibliotheken in der App | E | SOLL | Nur Android-Framework und Kotlin-Standardbibliothek. |
 | **NFA-09** | Testbarkeit | Spiellogik ohne Android-Gerät testbar | E | SOLL | `GameEngine`, `Maze`, `Settings`, `Format` ohne Android-Importe; automatisierte JUnit-Tests. |
 | **NFA-10** | Bedienbarkeit | Bedienung auch mit Hilfstechnik möglich; Display bleibt während des Spiels an | E | SOLL | Auswahlfelder ≥ 48 dp hoch; Spielfeld mit Inhaltsbeschreibung und `performClick`; `keepScreenOn`. |
 | **NFA-11** | Lokalisierung | Deutsche Oberfläche, alle Texte in Ressourcen | E | SOLL | Keine fest kodierten Texte im Code oder in Layouts. |
 | **NFA-12** | Datenschutz | Keine Berechtigungen, kein Netzwerk; Daten nur lokal | E | MUSS | Manifest ohne `uses-permission`; Speicherung nur in privaten SharedPreferences. |
 | **NFA-13** | Energie | Beim Verlassen des Spiels ruhen Sensor und Spielschleife; die Zeit steht. | E | MUSS | `onPause` meldet den Sensor ab und stoppt die Frame-Callbacks. |
+| **NFA-14** | Darstellung Uhr | Das Labyrinth ist auf dem runden Display vollständig sichtbar und auch auf der 41-mm-Uhr spielbar groß. | E | MUSS | Alle Ecken des Labyrinths liegen im Displaykreis; Zellen auf 408 px (41 mm) auch bei „Profi“ ≥ 32 px (≈ 2,5 mm). |
+| **NFA-15** | Energie Uhr | Sparsamer Betrieb auf der Uhr | E | SOLL | Schwarzer Hintergrund (AMOLED); Sensor und Spielschleife nur während des Spiels; Spielfeld als vorgerenderte Bitmap. |
+| **NFA-16** | Wartbarkeit | Spiellogik, Sensorverarbeitung und Spielfeld existieren nur einmal für Handy und Uhr. | E | SOLL | Gemeinsames Modul `core`; `app` und `wear` enthalten nur Bildschirme und Texte. |
 
 ## 1.5 Abgrenzung (nicht Teil des Umfangs)
 
 - Keine Löcher oder Fallen im Spielfeld (bewusst entfernt, siehe [ADR-006](06-entscheidungen.md#adr-006-keine-löcher-im-spielfeld))
 - Kein Querformat, keine Tablet-optimierte Oberfläche
 - Keine Online-Funktionen, Ranglisten, Konten oder Werbung
-- Keine Sound- oder Vibrationsausgabe
+- Keine Sound- oder Vibrationsausgabe (außer der System-Haptik beim langen Drücken auf der Uhr)
+- Uhr: keine Kacheln (Tiles), Komplikationen oder Spielen im Always-on-Modus; Bestzeiten werden nicht zwischen Handy und Uhr synchronisiert
 - Keine weiteren Sprachen außer Deutsch
 - Spielstand wird nicht über eine Neuerstellung der Activity hinweg gesichert (siehe [Architektur 11](02-architektur.md#11-risiken-und-technische-schulden))
 

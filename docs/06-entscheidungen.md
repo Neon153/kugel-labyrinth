@@ -14,6 +14,11 @@ Jede Entscheidung folgt dem Schema **Kontext → Entscheidung → Konsequenzen**
 | 008 | Tempo in Bildschirmeinheiten und einstellbar | angenommen | 1.2 / 1.3 |
 | 009 | Zusammengefasste Wände und Zellenindex | angenommen | 1.1 |
 | 010 | Bestzeiten je Stufe, Hilfe-Art und Tempo | angenommen | 1.3 |
+| 011 | Gemeinsames Modul core für Handy und Uhr | angenommen | 1.4 |
+| 012 | Uhr-App ohne Compose und AndroidX | angenommen | 1.4 |
+| 013 | Quadratisches Labyrinth im runden Display | angenommen | 1.4 |
+| 014 | Uhr-Steuerung über die Schwerkraft | angenommen | 1.4 |
+| 015 | Gleiche applicationId und versionCode-Versatz | angenommen | 1.4 |
 
 ---
 
@@ -136,3 +141,78 @@ Jede Entscheidung folgt dem Schema **Kontext → Entscheidung → Konsequenzen**
 **Konsequenzen:**
 - ➕ Faire Vergleiche
 - ➖ Bestzeiten aus Version 1.2 und älter (Schlüssel ohne Tempo) werden nicht mehr angezeigt
+
+## ADR-011: Gemeinsames Modul core für Handy und Uhr
+
+**Kontext:** Für die Pixel Watch 5 wird eine zweite App gebraucht. Spiellogik, Sensorverarbeitung, Kalibrierung, Spielfeld und Einstellungen sind für Handy und Uhr gleich. Eine Kopie würde jede Korrektur doppelt nötig machen.
+
+**Entscheidung:** Drei Gradle-Module:
+- `core`: Android-Bibliothek mit `Settings`, `Maze`, `GameEngine`, `MazeLayout`, `Format` (Android-frei), dazu `GameView`, `TiltInput`, `GamePrefs` und den gemeinsamen Texten
+- `app`: Handy-Bildschirme
+- `wear`: Uhr-Bildschirme
+
+Die Kotlin-Pakete bleiben unverändert (`com.example.kugellabyrinth`). Die Dateien wurden mit `git mv` verschoben, sodass die Historie erhalten bleibt.
+
+**Konsequenzen:**
+- ➕ Eine Korrektur an Physik, Sensor oder Spielfeld wirkt auf beiden Geräten; alle Tests liegen an einer Stelle.
+- ➕ `app` und `wear` sind klein (je zwei Activities).
+- ➖ `GameView` braucht Konfigurationspunkte für Geräteunterschiede (`shape`, Texte, Schriftgrößen, Ergebnis-Overlay).
+- ➖ `core` ist eine Android-Bibliothek statt eines reinen JVM-Moduls; dass die Spiellogik Android-frei bleibt, ist Konvention und wird dadurch abgesichert, dass die Tests ohne Android-Klassen laufen.
+
+**Verworfen:** ein reines JVM-Modul nur für die Logik plus Kopien von `GameView`/`TiltInput` in beiden Apps (doppelter Code); ein zusätzliches viertes Modul nur für die Android-Teile (mehr Aufwand ohne Nutzen).
+
+## ADR-012: Uhr-App ohne Compose und AndroidX
+
+**Kontext:** Google empfiehlt für Wear OS „Compose for Wear OS“ mit runden Listen (`ScalingLazyColumn`) und fertigen Komponenten. Die Handy-App verzichtet bewusst auf Bibliotheken ([ADR-001](#adr-001-native-android-views-und-canvas-ohne-bibliotheken)).
+
+**Entscheidung:** Auch die Uhr-App nutzt nur Framework-Views:
+- `Theme.DeviceDefault` (auf Wear OS das Uhr-Design, inklusive Wischen zum Schließen)
+- `ScrollView` mit Fokus für die Krone
+- eigene Chip-Formen als Drawables
+- runde Abstände über den Ressourcen-Qualifier `-round`
+
+**Konsequenzen:**
+- ➕ Gleiche Technik wie die Handy-App, kleine APK, schneller Build, ohne zusätzliche Abhängigkeiten
+- ➕ Das Spielfeld (`GameView`) ist ohnehin eine Canvas-View und profitiert nicht von Compose.
+- ➖ Kein automatisches Skalieren der Menüeinträge am Kreisrand; dafür kurze Menütexte und Abstände per `values-round`
+- ➖ Die Bedienung per Krone hängt von der Rotary-Unterstützung der `ScrollView` ab (Risiko R-10, Gerätetest MW-02)
+
+## ADR-013: Quadratisches Labyrinth im runden Display
+
+**Kontext:** Die Pixel Watch 5 hat ein rundes Display mit 408 bzw. 456 px. Das rechteckige Labyrinth der Handy-App würde abgeschnitten.
+
+**Entscheidung:** Ein quadratisches Labyrinth (`watchCols` × `watchCols` = 5 bis 8) im größten Quadrat, das in den Kreis passt (Seite = D/√2), davon 96 % (`MazeLayout.squareInCircle`). Zeit und Stufe stehen in den Kreissegmenten oben und unten.
+
+**Konsequenzen:**
+- ➕ Gleiche Physik und Kollision wie auf dem Handy, das ganze Labyrinth ist sichtbar.
+- ➕ Getestet: Alle Ecken liegen im Kreis; auf der 41-mm-Uhr sind auch bei „Profi“ die Zellen ≥ 32 px.
+- ➖ Das Labyrinth nutzt nur 59 % der Displayfläche.
+
+**Verworfen:**
+- Kreisförmiges Labyrinth (Theta-Labyrinth): nutzt den Kreis besser, braucht aber eine eigene Erzeugung und Kollision mit Bögen.
+- Größeres Labyrinth mit mitlaufendem Ausschnitt: man sieht das Ziel nicht mehr, und es verändert das Spielprinzip.
+
+## ADR-014: Uhr-Steuerung über die Schwerkraft
+
+**Kontext:** Gefordert ist, dass die Kugel durch Neigen und Rotieren des Arms bewegt wird. Möglich wären eine schwerkraftbasierte Steuerung (wie auf dem Handy) oder eine drehratenbasierte Steuerung über das Gyroskop (Armdrehung = Geschwindigkeit).
+
+**Entscheidung:** Schwerkraftbasiert mit `TYPE_GRAVITY`, genau wie auf dem Handy. Der Arm wirkt als „Brett“: Unterarm drehen und Hand heben/senken ändern die Neigung des Displays, und die Kugel rollt zur tieferen Seite. Kalibrierung, Hilfen und Physik bleiben unverändert.
+
+**Konsequenzen:**
+- ➕ Intuitiv und physikalisch stimmig; funktioniert unabhängig davon, an welchem Handgelenk die Uhr sitzt.
+- ➕ Kein Drift: Gyroskop-Integration würde mit der Zeit weglaufen, die Schwerkraftrichtung nicht.
+- ➕ Armbewegungen ohne Neigungsänderung (Schwenken, Rucken) stören nicht.
+- ➖ Der nutzbare Bereich ist durch die Beweglichkeit des Unterarms begrenzt (bequem etwa ±30–40°). Das reicht für den vollen Steuerbereich bis 37°.
+
+**Verworfen:** Drehratensteuerung (Gyroskop), weil sie nicht der Labyrinth-Metapher entspricht und driftet; Steuerung über die Krone, weil sie nicht gefordert ist und nur eine Achse hat.
+
+## ADR-015: Gleiche applicationId und versionCode-Versatz
+
+**Kontext:** Handy- und Uhr-App sind dasselbe Spiel. Im Play Store können ein Handy- und ein Wear-OS-Build unter derselben `applicationId` in einem Eintrag veröffentlicht werden. Dafür müssen ihre versionCodes verschieden sein.
+
+**Entscheidung:** Beide Apps verwenden `applicationId = com.example.kugellabyrinth`. Der versionCode der Uhr ist **100 000 + versionCode des Handys**, der versionName ist gleich.
+
+**Konsequenzen:**
+- ➕ Ein Store-Eintrag, eine spätere Umbenennung des Pakets betrifft beide Apps gleich.
+- ➕ versionCodes können nicht kollidieren.
+- ➖ Bei jedem Release müssen beide Build-Dateien angepasst werden (siehe [Entwicklerhandbuch 5.8](05-entwicklerhandbuch.md#58-versionierung-und-änderungen)).

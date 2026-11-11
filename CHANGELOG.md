@@ -2,6 +2,21 @@
 
 Alle nennenswerten Änderungen am Projekt. Format angelehnt an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.4.0] – 2026-11-11 (Handy: versionCode 5, Uhr: versionCode 100005)
+
+### Hinzugefügt
+- **Uhr-App für Wear OS** (Zielgerät Google Pixel Watch 5, eigenständig ohne Handy): Die Kugel wird durch Neigen und Drehen des Arms gesteuert; quadratisches Labyrinth (5 × 5 bis 8 × 8) im runden Display; Menü mit Chips, −/+ und Krone; Neustart per langem Drücken; Ergebnis als Overlay auf dem Spielfeld.
+- `MazeLayout`: Android-freie, getestete Platzierung des Labyrinths (rechteckig / im Kreis).
+- 5 neue Tests (Uhr-Labyrinthe im Bot-Test, Layout-Geometrie); insgesamt 27.
+- CI liefert Handy- und Uhr-APK als getrennte Artefakte.
+- Dokumentation: Uhr-Anforderungen (FA-16 … FA-19, NFA-14 … NFA-16), Fachkonzept 3.9, Benutzerhandbuch 4.8, Entwicklerhandbuch 5.10, ADR-011 … ADR-015, Uhr-Gerätetests MW-01 … MW-12.
+
+### Geändert
+- Projekt in drei Module aufgeteilt: `core` (gemeinsam), `app` (Handy), `wear` (Uhr) ([ADR-011](docs/06-entscheidungen.md#adr-011-gemeinsames-modul-core-für-handy-und-uhr)). Die Handy-App verhält sich unverändert.
+- `GameView`: Form `RECT`/`ROUND`, konfigurierbare Overlay-Texte und Schriftgrößen, Ergebnis-Overlay; Touch über die Standardauswertung der View (Klick, langes Drücken, Bedienungshilfen).
+- `Difficulty` um `watchCols` erweitert.
+- Gemeinsame Texte nach `core` verschoben; Spielfeld-Beschreibung geräteneutral formuliert.
+
 ## [1.3.0] – 2026-10-30 (versionCode 4)
 
 ### Hinzugefügt
